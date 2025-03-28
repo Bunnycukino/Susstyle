@@ -18,7 +18,7 @@ scene.add(light);
 
 // Tekstura Ziemi
 const textureLoader = new THREE.TextureLoader();
-const earthTexture = textureLoader.load("earthmap.jpg");
+const earthTexture = const earthTexture = textureLoader.load("earthnight.jpg");
 
 const geometry = new THREE.SphereGeometry(5, 64, 64);
 const material = new THREE.MeshBasicMaterial({ map: earthTexture });
