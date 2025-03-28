@@ -12,23 +12,19 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Światło kierunkowe + ambient
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+// Światło ambient bardzo jasne
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-directionalLight.position.set(10, 10, 10).normalize();
-scene.add(directionalLight);
 
 // Tekstura nocna
 const textureLoader = new THREE.TextureLoader();
 const earthTexture = textureLoader.load("earthnight.jpg");
 
-// Używamy lepszego materiału do oświetlenia
+// Globus z awaryjnym kolorem jeśli tekstura nie zadziała
 const geometry = new THREE.SphereGeometry(5, 64, 64);
-const material = new THREE.MeshPhongMaterial({
+const material = new THREE.MeshBasicMaterial({
   map: earthTexture,
-  shininess: 2,
+  color: 0x3333ff,
 });
 
 const globe = new THREE.Mesh(geometry, material);
