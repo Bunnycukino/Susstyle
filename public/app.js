@@ -12,21 +12,16 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Światło ambient bardzo jasne
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-scene.add(ambientLight);
+// Światło
+const light = new THREE.AmbientLight(0xffffff);
+scene.add(light);
 
-// Tekstura nocna
+// Ładujemy klasyczną teksturę Ziemi
 const textureLoader = new THREE.TextureLoader();
-const earthTexture = textureLoader.load("earthnight.jpg");
+const earthTexture = textureLoader.load("earthmap.jpg");
 
-// Globus z awaryjnym kolorem jeśli tekstura nie zadziała
 const geometry = new THREE.SphereGeometry(5, 64, 64);
-const material = new THREE.MeshBasicMaterial({
-  map: earthTexture,
-  color: 0x3333ff,
-});
-
+const material = new THREE.MeshBasicMaterial({ map: earthTexture });
 const globe = new THREE.Mesh(geometry, material);
 scene.add(globe);
 
