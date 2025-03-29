@@ -40,6 +40,6 @@ controls.zoomSpeed = 0.6;
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update(); // ← kluczowe
+  controls.update(); // ← bardzo ważne!
   renderer.render(scene, camera);
 }
