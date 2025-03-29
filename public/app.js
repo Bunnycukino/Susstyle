@@ -9,6 +9,12 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({
   canvas: document.getElementById("globeCanvas"),
 });
+// Kontrolki kamery
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // płynniejsze obracanie
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.5;
+controls.zoomSpeed = 0.6;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
