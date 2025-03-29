@@ -32,10 +32,14 @@ const globe = new THREE.Mesh(geometry, material);
 scene.add(globe);
 
 camera.position.z = 15;
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.5;
+controls.zoomSpeed = 0.6;
 
 function animate() {
   requestAnimationFrame(animate);
-  globe.rotation.y += 0.002;
+  controls.update(); // ← kluczowe
   renderer.render(scene, camera);
 }
-animate();
