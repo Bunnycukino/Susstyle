@@ -9,12 +9,6 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({
   canvas: document.getElementById("globeCanvas"),
 });
-// Kontrolki kamery
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; // płynniejsze obracanie
-controls.dampingFactor = 0.05;
-controls.rotateSpeed = 0.5;
-controls.zoomSpeed = 0.6;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -37,15 +31,18 @@ const material = new THREE.MeshBasicMaterial({ map: earthTexture });
 const globe = new THREE.Mesh(geometry, material);
 scene.add(globe);
 
+// Kamera
 camera.position.z = 15;
+
+// Kontrolki
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.rotateSpeed = 0.5;
-controls.zoomSpeed = 0.6;
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update(); // ← bardzo ważne!
+  globe.rotation.y += 0.002;
+  controls.update();
   renderer.render(scene, camera);
 }
+animate();
