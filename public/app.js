@@ -12,11 +12,17 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Ustawienie tła sceny
+const loader = new THREE.TextureLoader();
+loader.load("stars.jpg", function(texture) {
+  scene.background = texture;
+});
+
 // Światło
 const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
 
-// Ładujemy klasyczną teksturę Ziemi
+// Tekstura Ziemi
 const textureLoader = new THREE.TextureLoader();
 const earthTexture = textureLoader.load("earthmap.jpg");
 
