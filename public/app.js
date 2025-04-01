@@ -30,7 +30,28 @@ const geometry = new THREE.SphereGeometry(5, 64, 64);
 const material = new THREE.MeshBasicMaterial({ map: earthTexture });
 const globe = new THREE.Mesh(geometry, material);
 scene.add(globe);
+// MARKER - Warszawa
+const warsawGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+const warsawMaterial = new THREE.MeshBasicMaterial({ color: 0xff66cc });
+const warsawMarker = new THREE.Mesh(warsawGeometry, warsawMaterial);
+warsawMarker.position.set(-2.86, 3.95, -1.10);
+scene.add(warsawMarker);
 
+// Interaktywność
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObject(warsawMarker);
+
+  if (intersects.length > 0) {
+    alert('Witamy w Warszawie!');
+  }
+});
 // Kamera
 camera.position.z = 15;
 
