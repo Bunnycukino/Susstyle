@@ -1,4 +1,21 @@
 // SCENA, KAMERA, RENDERER
+const gltfLoader = new THREE.GLTFLoader();
+
+// WARSZAWA
+gltfLoader.load('warsaw-icon.glb', (gltf) => {
+  const warsawIcon = gltf.scene;
+  warsawIcon.position.copy(latLongToVector3(52.2297, 21.0122, 5.1));
+  warsawIcon.scale.set(0.5, 0.5, 0.5);
+  globe.add(warsawIcon);
+});
+
+// MANCHESTER
+gltfLoader.load('manchester-icon.glb', (gltf) => {
+  const manchesterIcon = gltf.scene;
+  manchesterIcon.position.copy(latLongToVector3(53.4808, -2.2426, 5.1));
+  manchesterIcon.scale.set(0.5, 0.5, 0.5);
+  globe.add(manchesterIcon);
+});
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("globeCanvas") });
