@@ -48,7 +48,7 @@ function latLongToVector3(lat, lon, radius) {
 
 // Loader ikon 3D
 const gltfLoader = new THREE.GLTFLoader();
-function addCityIcon(path, lat, lon, radius = 5.2) {
+function addCityIcon("/warsaw-icon.glb", 52.2297, 21.0122); {
   gltfLoader.load(
     path,
     (gltf) => {
