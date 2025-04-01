@@ -69,13 +69,27 @@ function onPointerDown(event) {
   }
 }
 
-window.addEventListener("pointerdown", onPointerDown);
+window.addEventListener("pointerdown", (event) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const x = ((event.clientX || event.touches?.[0].clientX) - rect.left) / rect.width;
+  const y = ((event.clientY || event.touches?.[0].clientY) - rect.top) / rect.height;
 
-// Kontrolki i kamera
-camera.position.z = 15;
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+  mouse.x = x * 2 - 1;
+  mouse.y = -(y * 2 - 1);
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects([warsawMarker, manchesterMarker]);
+
+  if (intersects.length > 0) {
+    const clicked = intersects[0].object;
+
+    if (clicked === warsawMarker) {
+      window.location.href = "warsaw.html";
+    } else if (clicked === manchesterMarker) {
+      window.location.href = "manchester.html";
+    }
+  }
+});
 
 // Animacja
 function animate() {
