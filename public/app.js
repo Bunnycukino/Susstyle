@@ -78,10 +78,5 @@ function latLongToVector3(lat, lon, radius) {
 
   return new THREE.Vector3(x, y, z);
 }
-const warsawPosition = latLongToVector3(52.2297, 21.0122, 5.1); // 5.1 = trochę nad powierzchnią
-const warsawGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-const warsawMaterial = new THREE.MeshBasicMaterial({ color: 0xff66cc });
-const warsawMarker = new THREE.Mesh(warsawGeometry, warsawMaterial);
-warsawMarker.position.copy(warsawPosition);
-globe.add(warsawMarker);
+
 animate();
