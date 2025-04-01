@@ -19,7 +19,7 @@ const globe = new THREE.Mesh(
 );
 scene.add(globe);
 
-// Funkcja: współrzędne geograficzne → pozycja 3D
+// Funkcja: lat/lon -> pozycja 3D
 function latLongToVector3(lat, lon, radius) {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lon + 180) * (Math.PI / 180);
@@ -30,24 +30,26 @@ function latLongToVector3(lat, lon, radius) {
   );
 }
 
-// MARKER WARSZAWA (box)
-const warsawBox = new THREE.Mesh(
-  new THREE.BoxGeometry(0.3, 0.5, 0.3),
-  new THREE.MeshBasicMaterial({ color: 0xff69b4 }) // różowy
-);
-warsawBox.position.copy(latLongToVector3(52.2297, 21.0122, 5.1));
-globe.add(warsawBox);
+// Ikony 3D .glb
+const gltfLoader = new THREE.GLTFLoader();
 
-// MARKER MANCHESTER (box)
-const manchesterBox = new THREE.Mesh(
-  new THREE.BoxGeometry(0.3, 0.5, 0.3),
-  new THREE.MeshBasicMaterial({ color: 0x6699ff }) // niebieski
-);
-manchesterBox.position.copy(latLongToVector3(53.4808, -2.2426, 5.1));
-globe.add(manchesterBox);
-console.log("Warsaw box added");
-console.log("Manchester box added");
-// Kamera i kontrolki
+// WARSZAWA
+gltfLoader.load('warsaw-icon.glb', (gltf) => {
+  const warsawIcon = gltf.scene;
+  warsawIcon.position.copy(latLongToVector3(52.2297, 21.0122, 5.1));
+  warsawIcon.scale.set(0.5, 0.5, 0.5);
+  globe.add(warsawIcon);
+});
+
+// MANCHESTER
+gltfLoader.load('manchester-icon.glb', (gltf) => {
+  const manchesterIcon = gltf.scene;
+  manchesterIcon.position.copy(latLongToVector3(53.4808, -2.2426, 5.1));
+  manchesterIcon.scale.set(0.5, 0.5, 0.5);
+  globe.add(manchesterIcon);
+});
+
+// Kamera + kontrolki
 camera.position.z = 15;
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
