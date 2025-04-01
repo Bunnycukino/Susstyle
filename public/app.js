@@ -41,16 +41,25 @@ globe.add(warsawMarker);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-window.addEventListener("click", (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+window.addEventListener(function onPointerDown(event) {
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  const x = ((event.clientX || event.touches?.[0].clientX) - rect.left) / rect.width;
+  const y = ((event.clientY || event.touches?.[0].clientY) - rect.top) / rect.height;
+
+  mouse.x = x * 2 - 1;
+  mouse.y = - (y * 2 - 1);
 
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(globe.children);
 
-  for (let i = 0; i < intersects.length; i++) {
-    if (intersects[i].object === warsawMarker) {
-      alert("Witamy w Warszawie!");
+  const intersects = raycaster.intersectObjects(globe.children, true);
+  if (intersects.length > 0 && intersects[0].object === warsawMarker) {
+    alert("Witamy w Warszawie!");
+  }
+}
+
+// Obsługa kliknięć na komputerze i dotyku na telefonie
+window.addEventListener("pointerdown", onPointerDown);
     }
   }
 });
