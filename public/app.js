@@ -45,7 +45,8 @@ const manchesterBox = new THREE.Mesh(
 );
 manchesterBox.position.copy(latLongToVector3(53.4808, -2.2426, 5.1));
 globe.add(manchesterBox);
-
+console.log("Warsaw box added");
+console.log("Manchester box added");
 // Kamera i kontrolki
 camera.position.z = 15;
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
