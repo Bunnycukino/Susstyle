@@ -72,8 +72,15 @@ function onPointerDown(event) {
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(globe.children, true);
 
-  if (intersects.length > 0 && intersects[0].object === warsawMarker) {
+if (intersects.length > 0) {
+  const clicked = intersects[0].object;
+
+  if (clicked === warsawMarker) {
     alert("Witamy w Warszawie!");
+  } else if (clicked === manchesterMarker) {
+    alert("Witamy w Manchesterze!");
+  }
+}
   }
 }
 
