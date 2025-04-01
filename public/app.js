@@ -87,18 +87,4 @@ globe.add(warsawMarker);
 }
 
 animate();
-// Interaktywność kliknięcia w marker
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
 
-window.addEventListener("click", (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(warsawMarker);
-
-  if (intersects.length > 0) {
-    alert("Witamy w Warszawie!");
-  }
-});
