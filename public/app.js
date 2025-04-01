@@ -68,4 +68,20 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
 }
+function latLongToVector3(lat, lon, radius) {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lon + 180) * (Math.PI / 180);
+
+  const x = -radius * Math.sin(phi) * Math.cos(theta);
+  const y = radius * Math.cos(phi);
+  const z = radius * Math.sin(phi) * Math.sin(theta);
+
+  return new THREE.Vector3(x, y, z);
+}
+const warsawPosition = latLongToVector3(52.2297, 21.0122, 5.1); // 5.1 = trochę nad powierzchnią
+const warsawGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+const warsawMaterial = new THREE.MeshBasicMaterial({ color: 0xff66cc });
+const warsawMarker = new THREE.Mesh(warsawGeometry, warsawMaterial);
+warsawMarker.position.copy(warsawPosition);
+globe.add(warsawMarker);
 animate();
