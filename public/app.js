@@ -41,15 +41,17 @@ globe.add(warsawMarker);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-window.addEventListener('click', (event) => {
+window.addEventListener("click", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(warsawMarker);
+  const intersects = raycaster.intersectObjects(globe.children);
 
-  if (intersects.length > 0) {
-    alert('Witamy w Warszawie!');
+  for (let i = 0; i < intersects.length; i++) {
+    if (intersects[i].object === warsawMarker) {
+      alert("Witamy w Warszawie!");
+    }
   }
 });
 // Kamera
