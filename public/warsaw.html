@@ -2,25 +2,132 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Warszawa - Kolekcja Susstyle</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Susstyle - Warszawa</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #fff;
+      color: #333;
+    }
+
+    header {
+      background-color: #f3f3f3;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .hero {
+      background-image: url("https://images.unsplash.com/photo-1521336575822-6da63fb45455");
+      background-size: cover;
+      background-position: center;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+    }
+
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .product {
+      width: 250px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: 0.3s;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .product img {
+      width: 100%;
+      display: block;
+    }
+
+    .product .info {
+      padding: 1rem;
+    }
+
+    .product .info h3 {
+      margin-top: 0;
+    }
+
+    .back {
+      text-align: center;
+      margin: 2rem;
+    }
+
+    .back a {
+      text-decoration: none;
+      background: #333;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Susstyle</h1>
-    </header>
-    <section class="hero">
-        <img src="model.jpg" alt="Modelka z torbą" />
-        <div class="hero-text">
-            <h2>Warszawa — Kolekcja Wiosna</h2>
-            <p>Nowoczesna elegancja inspirowana ulicami Warszawy.</p>
-            <a href="#" class="shop-button">Zobacz kolekcję</a>
-        </div>
-    </section>
-    <footer>
-        <p>&copy; 2025 Susstyle. All rights reserved.</p>
-    </footer>
+
+  <header>
+    <h1>Susstyle Warszawa</h1>
+    <nav>
+      <a href="index.html">Powrót do globusa</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    Wiosenna Kolekcja 2025
+  </div>
+
+  <section class="products">
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1602810316636-04f79df0c6fd" alt="Sukienka">
+      <div class="info">
+        <h3>Delikatna sukienka</h3>
+        <p>399 zł</p>
+      </div>
+    </div>
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1520962912402-66ae41c80fd3" alt="Torebka">
+      <div class="info">
+        <h3>Torebka skórzana</h3>
+        <p>599 zł</p>
+      </div>
+    </div>
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1598032896920-c89e2f019911" alt="Sweter">
+      <div class="info">
+        <h3>Wełniany sweter</h3>
+        <p>289 zł</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="back">
+    <a href="index.html">Powrót na globus</a>
+  </div>
+
 </body>
 </html>
