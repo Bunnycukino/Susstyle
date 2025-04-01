@@ -81,9 +81,6 @@ if (intersects.length > 0) {
     alert("Witamy w Manchesterze!");
   }
 }
-  }
-}
-
 window.addEventListener("pointerdown", onPointerDown);
 
 // Kamera
