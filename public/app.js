@@ -35,7 +35,7 @@ const warsawGeometry = new THREE.SphereGeometry(0.1, 16, 16);
 const warsawMaterial = new THREE.MeshBasicMaterial({ color: 0xff66cc });
 const warsawMarker = new THREE.Mesh(warsawGeometry, warsawMaterial);
 warsawMarker.position.set(-2.86, 3.95, -1.10);
-scene.add(warsawMarker);
+globe.add(warsawMarker);
 
 // Interaktywność
 const raycaster = new THREE.Raycaster();
