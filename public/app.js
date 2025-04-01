@@ -50,7 +50,13 @@ const warsawMaterial = new THREE.MeshBasicMaterial({ color: 0xff66cc });
 const warsawMarker = new THREE.Mesh(warsawGeometry, warsawMaterial);
 warsawMarker.position.copy(warsawPosition);
 globe.add(warsawMarker);
-
+// Dodajemy marker Manchester
+const manchesterPosition = latLongToVector3(53.4808, -2.2426, 5.1);
+const manchesterGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+const manchesterMaterial = new THREE.MeshBasicMaterial({ color: 0x6699ff });
+const manchesterMarker = new THREE.Mesh(manchesterGeometry, manchesterMaterial);
+manchesterMarker.position.copy(manchesterPosition);
+globe.add(manchesterMarker);
 // Raycaster do interakcji
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
