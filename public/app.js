@@ -1,20 +1,38 @@
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(
+  60,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 camera.position.set(0, 0, 20);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("globeCanvas"), antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById("globeCanvas"),
+  antialias: true
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// Tło i Ziemia
+// Tło
 const loader = new THREE.TextureLoader();
-scene.background = loader.load("stars.jpg");
+loader.load("stars.jpg", texture => {
+  scene.background = texture;
+});
 
+// Światło
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+
+// Ziemia
 const earthTexture = loader.load("earthmap.jpg");
-const globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshBasicMaterial({ map: earthTexture }));
+const globe = new THREE.Mesh(
+  new THREE.SphereGeometry(5, 64, 64),
+  new THREE.MeshBasicMaterial({ map: earthTexture })
+);
 scene.add(globe);
 
-// Ikony
-function latLongToVector3(lat, lon, radius) {
+// Funkcja przeliczania współrzędnych
+function latLongToVector3(lat, lon, radius = 5.1) {
   const phi = (90 - lat) * Math.PI / 180;
   const theta = (lon + 180) * Math.PI / 180;
   return new THREE.Vector3(
@@ -24,23 +42,49 @@ function latLongToVector3(lat, lon, radius) {
   );
 }
 
-const gltfLoader = new THREE.GLTFLoader();
-function addCity(file, lat, lon) {
-  gltfLoader.load(file, gltf => {
-    const icon = gltf.scene;
-    icon.scale.set(0.3, 0.3, 0.3);
-    icon.position.copy(latLongToVector3(lat, lon, 5.2));
-    globe.add(icon);
-  });
+// Dodajemy markery
+function addMarker(lat, lon, color, cityName) {
+  const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+  const material = new THREE.MeshBasicMaterial({ color });
+  const marker = new THREE.Mesh(geometry, material);
+  marker.position.copy(latLongToVector3(lat, lon));
+  marker.userData.city = cityName;
+  globe.add(marker);
+  clickableMarkers.push(marker);
 }
 
-addCity("warsaw-icon.glb", 52.2297, 21.0122);
-addCity("manchester-icon.glb", 53.4808, -2.2426);
+const clickableMarkers = [];
 
+addMarker(52.2297, 21.0122, 0xff66cc, "Warszawa");
+addMarker(53.4808, -2.2426, 0x6699ff, "Manchester");
+
+// Interakcja
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener("pointerdown", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(clickableMarkers);
+
+  if (intersects.length > 0) {
+    const city = intersects[0].object.userData.city;
+    if (city === "Warszawa") {
+      window.location.href = "warsaw.html";
+    } else if (city === "Manchester") {
+      window.location.href = "manchester.html";
+    }
+  }
+});
+
+// Kontrolki
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
+// Animacja
 function animate() {
   requestAnimationFrame(animate);
   globe.rotation.y += 0.001;
@@ -48,3 +92,10 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
+
+// Responsywność
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
