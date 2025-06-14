@@ -1,26 +1,68 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Warszawa - Kolekcja Susstyle</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babcia Halina - Rękodzieło Handmade</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1>Susstyle</h1>
+        <div class="container">
+            <h1>Babcia Halina</h1>
+            <p>Rękodzieło handmade z pasją</p>
+        </div>
     </header>
-    <section class="hero">
-        <img src="model.jpg" alt="Modelka z torbą" />
-        <div class="hero-text">
-            <h2>Warszawa — Kolekcja Wiosna</h2>
-            <p>Nowoczesna elegancja inspirowana ulicami Warszawy.</p>
-            <a href="#" class="shop-button">Zobacz kolekcję</a>
+
+    <nav>
+        <div class="container">
+            <a href="#o-mnie">O mnie</a>
+            <a href="#produkty">Produkty</a>
+            <a href="#kontakt">Kontakt</a>
+        </div>
+    </nav>
+
+    <section id="o-mnie" class="section">
+        <div class="container">
+            <h2>O mnie</h2>
+            <p>Cześć! Jestem Halina i od lat tworzę unikalne rękodzieło. Szyję torby, robótki ręczne, decoupage i wiele więcej. Każdy produkt jest wykonany z miłością i dbałością o detale.</p>
         </div>
     </section>
+
+    <section id="produkty" class="section">
+        <div class="container">
+            <h2>Moje produkty</h2>
+            <div class="produkty-grid">
+                <!-- Przykładowe produkty (możesz dodać więcej) -->
+                <div class="produkt">
+                    <img src="assets/produkty/torba.jpg" alt="Torba handmade">
+                    <h3>Torba lniana</h3>
+                    <p>50 zł</p>
+                </div>
+                <div class="produkt">
+                    <img src="assets/produkty/szal.jpg" alt="Szal ręcznie robiony">
+                    <h3>Szal wełniany</h3>
+                    <p>80 zł</p>
+                </div>
+                <!-- Dodaj więcej produktów -->
+            </div>
+        </div>
+    </section>
+
+    <section id="kontakt" class="section">
+        <div class="container">
+            <h2>Kontakt i zamówienia</h2>
+            <p>Chcesz coś zamówić lub masz pytania? Napisz do mnie!</p>
+            <p>📧 Email: <a href="mailto:halina@babciahalina.com">halina@babciahalina.com</a></p>
+            <p>📞 Telefon: +48 123 456 789</p>
+        </div>
+    </section>
+
     <footer>
-        <p>&copy; 2025 Susstyle. All rights reserved.</p>
+        <div class="container">
+            <p>© 2024 Babcia Halina | Wszelkie prawa zastrzeżone</p>
+        </div>
     </footer>
 </body>
 </html>
