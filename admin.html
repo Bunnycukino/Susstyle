@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admina - Susstyle</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>🎨 Panel Administratora Susstyle</h1>
+            <a href="index.html" class="back-btn">← Powrót do strony</a>
+        </header>
+
+        <div class="admin-content">
+            <div class="upload-section">
+                <h2>➕ Dodaj Nowy Produkt</h2>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <label>Nazwa produktu:</label>
+                        <input type="text" id="productName" placeholder="np. Elegancka Sukienka" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Opis:</label>
+                        <textarea id="productDescription" placeholder="Krótki opis produktu" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Lokalizacja:</label>
+                        <select id="productLocation" required>
+                            <option value="">Wybierz...</option>
+                            <option value="warszawa">Warszawa</option>
+                            <option value="manchester">Manchester</option>
+                            <option value="akcesoria">Akcesoria</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Zdjęcie produktu:</label>
+                        <input type="file" id="productImage" accept="image/*" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">🚀 Dodaj Produkt</button>
+                </form>
+                
+                <div id="uploadStatus" class="status-message"></div>
+            </div>
+
+            <div class="products-list">
+                <h2>📦 Lista Produktów</h2>
+                <div id="productsList">
+                    <!-- Produkty będą tutaj -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

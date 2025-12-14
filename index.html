@@ -1,15 +1,146 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Susstyle Shop</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="public/app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Susstyle - Fashion & Style</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <h1>Witamy w Susstyle Shop!</h1>
-  <canvas id="globeCanvas"></canvas>
+    <!-- NAWIGACJA -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h1>SUSSTYLE</h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Start</a></li>
+                <li><a href="#globe" class="nav-link">Lokalizacje</a></li>
+                <li><a href="#gallery" class="nav-link">Kolekcja</a></li>
+                <li><a href="#about" class="nav-link">O nas</a></li>
+                <li><a href="#contact" class="nav-link">Kontakt</a></li>
+                <li><a href="#" id="adminLink" class="nav-link admin-link"><i class="fas fa-user-shield"></i> Admin</a></li>
+            </ul>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SEKCJA -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">SUSSTYLE</h1>
+            <p class="hero-subtitle">Fashion & Style od Warszawy do Manchesteru</p>
+            <a href="#globe" class="hero-btn">Odkryj Lokalizacje</a>
+        </div>
+    </section>
+
+    <!-- INTERAKTYWNY GLOBUS -->
+    <section id="globe" class="globe-section">
+        <div class="container">
+            <h2 class="section-title">Nasze Lokalizacje</h2>
+            <p class="section-description">Kliknij na marker, aby zobaczyć kolekcję z danego miasta</p>
+        </div>
+        <canvas id="globeCanvas"></canvas>
+    </section>
+
+    <!-- GALERIA PRODUKTÓW -->
+    <section id="gallery" class="gallery-section">
+        <div class="container">
+            <h2 class="section-title">Nasza Kolekcja</h2>
+            
+            <!-- Filtry -->
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Wszystko</button>
+                <button class="filter-btn" data-filter="warszawa">Warszawa</button>
+                <button class="filter-btn" data-filter="manchester">Manchester</button>
+                <button class="filter-btn" data-filter="akcesoria">Akcesoria</button>
+            </div>
+
+            <!-- Siatka produktów -->
+            <div class="product-grid" id="product-grid">
+                <!-- Produkty będą dodawane przez JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- O NAS -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">O Susstyle</h2>
+            <div class="about-content">
+                <p>Susstyle to marka łącząca elegancję Warszawy z miejskim stylem Manchesteru. Nasza kolekcja to połączenie nowoczesnego designu z klasyczną elegancją.</p>
+                <p>Każdy produkt w naszej ofercie jest starannie wyselekcjonowany, aby zapewnić najwyższą jakość i unikalny styl.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- KONTAKT -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Kontakt</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Warszawa</h3>
+                            <p>ul. Modowa 1, 00-001 Warszawa</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Manchester</h3>
+                            <p>Fashion Street 10, Manchester M1 1AA</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <p>kontakt@susstyle.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STOPKA -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Susstyle. Wszystkie prawa zastrzeżone.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL DLA OBRAZÓW -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-image" id="modalImage" src="" alt="">
+        <div class="modal-caption" id="modalCaption"></div>
+    </div>
+
+    <!-- MODAL LOGOWANIA ADMINA -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content-admin">
+            <span class="close">&times;</span>
+            <h2>Panel Administratora</h2>
+            <form id="adminLoginForm">
+                <input type="password" id="adminPassword" placeholder="Hasło" required>
+                <button type="submit">Zaloguj</button>
+            </form>
+            <p id="loginError" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- SKRYPTY -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
