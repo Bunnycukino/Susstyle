@@ -1,0 +1,15 @@
+{
+  "name": "susstyle-uha",
+  "version": "1.0.0",
+  "description": "Universal Human Assistant for Susstyle.com",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'No dev server - deploy to Vercel'"
+  },
+  "dependencies": {
+    "openai": "^4.70.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
