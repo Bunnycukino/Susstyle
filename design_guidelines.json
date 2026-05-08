@@ -1,0 +1,85 @@
+{
+  "theme": "Light",
+  "archetype": "1 (Organic & Earthy)",
+  "brand_name": "SusStyle AI",
+  "domain": "susstyle.com",
+  "core_philosophy": "Patients need warmth, calm, trust. Avoid dark, techy, clinical vibes. Emphasize organic curves, soft shadows, and deep earthy colors.",
+  "colors": {
+    "background_primary": "#F9F8F6",
+    "background_secondary": "#FFFFFF",
+    "background_tertiary": "#E8E6E1",
+    "primary_brand": "#8BA888",
+    "primary_brand_hover": "#7A9678",
+    "accent_alert": "#CC7A6B",
+    "text_main": "#1A2E25",
+    "text_muted": "#5C6A64",
+    "border_color": "#E1DFDA"
+  },
+  "typography": {
+    "font_heading": "Outfit, sans-serif",
+    "font_body": "Manrope, sans-serif",
+    "rules": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none text-[#1A2E25] font-light",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-none text-[#1A2E25]",
+      "h3": "text-xl sm:text-2xl text-[#1A2E25]",
+      "body": "text-base text-[#5C6A64] leading-relaxed",
+      "labels": "text-xs tracking-[0.2em] uppercase text-[#5C6A64]"
+    }
+  },
+  "layout_and_spacing": {
+    "global_padding": "p-8 md:p-12 lg:p-20",
+    "marketing_grid": "grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-8 md:gap-12",
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "border_radius": {
+      "cards": "rounded-2xl",
+      "buttons": "rounded-full",
+      "inputs": "rounded-xl"
+    }
+  },
+  "surface_strategies": {
+    "dashboard_cards": "bg-white border border-[#E1DFDA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]",
+    "chat_bubbles_ai": "bg-[#8BA888]/15 text-[#1A2E25] rounded-2xl rounded-tl-sm p-4",
+    "chat_bubbles_user": "bg-[#E8E6E1] text-[#1A2E25] rounded-2xl rounded-tr-sm p-4",
+    "nav_bar": "bg-[#F9F8F6]/80 backdrop-blur-xl border-b border-[#E1DFDA]"
+  },
+  "interactions": {
+    "hover_state": "hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out",
+    "focus_state": "focus:outline-none focus:ring-2 focus:ring-[#8BA888] focus:ring-offset-2",
+    "testing_attributes": "All interactive elements MUST include a data-testid attribute in kebab-case."
+  },
+  "components_strategy": {
+    "forms": "Use Shadcn Form, Input, Select. Wrap with generous padding. Rounded-xl borders.",
+    "buttons": "Shadcn Button. Override to rounded-full. Primary uses #8BA888.",
+    "charts": "Shadcn Recharts. Use monochromatic organic palette (various shades of #8BA888).",
+    "chat_interface": "Custom flex layout. Needs explicit auto-scroll and wide readable container. Soft boundaries.",
+    "admin_dashboard": "Use Shadcn Table for user management. Dense data, but wrap in rounded-2xl containers with #FFFFFF background."
+  },
+  "image_urls": [
+    {
+      "category": "hero_background",
+      "url": "https://images.unsplash.com/photo-1738117394130-37a190a4c36b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxzb2Z0JTIwYWJzdHJhY3QlMjBlYXJ0aHklMjBiZWlnZSUyMGdyZWVuJTIwdGV4dHVyZXxlbnwwfHx8fDE3NzgyMzkxNDV8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Soft organic green and beige abstract background. Use as a gentle backdrop for the marketing hero section."
+    },
+    {
+      "category": "marketing_feature_doctor",
+      "url": "https://images.unsplash.com/photo-1758691461935-202e2ef6b69f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwY29uc3VsdGF0aW9uJTIwcGF0aWVudCUyMGRvY3RvcnxlbnwwfHx8fDE3NzgyMzkxMTl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Doctor talking to patient. Use in the 'About' or 'Why Us' section on the landing page."
+    },
+    {
+      "category": "dashboard_welcome_image",
+      "url": "https://images.unsplash.com/photo-1758691461990-03b49d969495?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwzfHxtZWRpY2FsJTIwY29uc3VsdGF0aW9uJTIwcGF0aWVudCUyMGRvY3RvcnxlbnwwfHx8fDE3NzgyMzkxMTl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Doctor writing on chart. Good for user dashboard empty states or medical history hero header."
+    }
+  ],
+  "instructions_to_main_agent": [
+    "You are building SusStyle AI Medical Helper, a SaaS platform combining patient chat and an admin dashboard.",
+    "Do NOT use 'Inter', 'Roboto', or 'Open Sans'. Load 'Outfit' and 'Manrope' from Google Fonts.",
+    "Ensure the entire app is built with mobile-first responsive utility classes. The design relies heavily on generous spacing.",
+    "For all interactive elements (buttons, inputs, links, tabs), you MUST add 'data-testid' attributes (e.g., data-testid='chat-submit-btn').",
+    "Use Phosphor Icons (@phosphor-icons/react) in Duotone weight for a softer, organic aesthetic.",
+    "Implement the landing page using raw HTML/Tailwind for bento-box layouts. Ensure direct children logic for Grid layouts.",
+    "Use Shadcn UI for the complex elements: Auth Forms, User Dashboard layout, Medical History tables, Settings dialogs.",
+    "Ensure files are generated as .js or .jsx, NOT .tsx.",
+    "The AI chat interface must use clear visual separation. Never use purely white background for both user and AI. AI should use a faint sage green tint (#8BA888/15)."
+  ]
+}
