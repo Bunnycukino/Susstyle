@@ -1,4 +1,5 @@
 """Admin endpoints: users management, conversations search, settings, analytics."""
+import re
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from bson import ObjectId
@@ -32,9 +33,10 @@ async def list_users(
     from server import db
     filt = {}
     if q:
+        safe_q = re.escape(q)
         filt["$or"] = [
-            {"email": {"$regex": q, "$options": "i"}},
-            {"name": {"$regex": q, "$options": "i"}},
+            {"email": {"$regex": safe_q, "$options": "i"}},
+            {"name": {"$regex": safe_q, "$options": "i"}},
         ]
     if role:
         filt["role"] = role
@@ -131,7 +133,8 @@ async def admin_search_conversations(
     from server import db
     filt = {}
     if q:
-        filt["title"] = {"$regex": q, "$options": "i"}
+        safe_q = re.escape(q)
+        filt["title"] = {"$regex": safe_q, "$options": "i"}
     total = await db.conversations.count_documents(filt)
     convs = await db.conversations.find(filt, {"_id": 0}).sort("updated_at", -1).skip(skip).limit(limit).to_list(limit)
     # Attach user emails

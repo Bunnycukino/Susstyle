@@ -30,9 +30,13 @@ def _user_to_out(user_doc: dict) -> dict:
 async def _record_failed(db, identifier: str):
     now = datetime.now(timezone.utc)
     doc = await db.login_attempts.find_one({"identifier": identifier})
-    if doc and (now - doc.get("first_attempt", now)).total_seconds() > 900:
-        await db.login_attempts.delete_one({"identifier": identifier})
-        doc = None
+    if doc:
+        fa = doc.get("first_attempt")
+        if isinstance(fa, datetime) and fa.tzinfo is None:
+            fa = fa.replace(tzinfo=timezone.utc)
+        if fa and (now - fa).total_seconds() > 900:
+            await db.login_attempts.delete_one({"identifier": identifier})
+            doc = None
     if doc is None:
         await db.login_attempts.insert_one({"identifier": identifier, "count": 1, "first_attempt": now})
     else:
@@ -44,7 +48,10 @@ async def _is_locked(db, identifier: str) -> bool:
     doc = await db.login_attempts.find_one({"identifier": identifier})
     if not doc:
         return False
-    if (now - doc.get("first_attempt", now)).total_seconds() > 900:
+    fa = doc.get("first_attempt")
+    if isinstance(fa, datetime) and fa.tzinfo is None:
+        fa = fa.replace(tzinfo=timezone.utc)
+    if fa and (now - fa).total_seconds() > 900:
         await db.login_attempts.delete_one({"identifier": identifier})
         return False
     return doc.get("count", 0) >= 5

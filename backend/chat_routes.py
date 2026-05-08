@@ -100,30 +100,62 @@ Respond exclusively in {lang_name}. Translate medical terminology where helpful 
 
 
 SOURCE_LINE_RE = re.compile(r"^\s*[-•*]\s*(.+?)(?:\s+[-—–]\s+(.+?))?(?:\s+(https?://\S+))?\s*$")
+MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^\)]+)\)")
+URL_RE = re.compile(r"(https?://\S+)")
 
 
 def extract_sources(text: str) -> List[dict]:
-    """Parse the trailing Sources: block into structured citations."""
+    """Parse the trailing Sources: block into structured citations.
+
+    Supports formats:
+        - Source Name — topic — https://url
+        - Source Name (https://url)
+        - [Source Name](https://url) — topic
+        - Source Name. https://url
+        - https://url
+    """
     if not text:
         return []
-    # Find the last 'Sources:' or 'Sources' header (case-insensitive)
-    match = re.search(r"(?im)^\s*(?:\*\*)?Sources?(?:\*\*)?\s*:?\s*$", text)
+    match = re.search(r"(?im)^\s*\*{0,2}\s*Sources?\s*\*{0,2}\s*:?\s*\*{0,2}\s*$", text)
     if not match:
         return []
     block = text[match.end():].strip()
     sources = []
     for line in block.splitlines():
-        line = line.strip()
+        line = line.strip().lstrip("-•* ").rstrip(" .;,")
         if not line:
             continue
-        m = SOURCE_LINE_RE.match(line)
-        if not m:
+
+        # Markdown link: [Name](url) - topic
+        md = MARKDOWN_LINK_RE.search(line)
+        if md:
+            name = md.group(1).strip()
+            url = md.group(2).strip()
+            rest = MARKDOWN_LINK_RE.sub("", line).strip(" -—–:.;,")
+            sources.append({"name": name, "topic": rest, "url": url})
             continue
-        name = (m.group(1) or "").strip().rstrip("—-–").strip()
-        topic = (m.group(2) or "").strip() if m.group(2) else ""
-        url = (m.group(3) or "").strip() if m.group(3) else ""
-        if name:
-            sources.append({"name": name, "topic": topic, "url": url})
+
+        # Bullet-style: Name [— topic] [url]
+        m = SOURCE_LINE_RE.match("- " + line)
+        url_match = URL_RE.search(line)
+        if m and (m.group(2) or m.group(3) or url_match):
+            name = (m.group(1) or "").strip().rstrip("—-–.,;:").strip()
+            topic = (m.group(2) or "").strip().rstrip("—-–.,;:").strip() if m.group(2) else ""
+            url = (m.group(3) or "").strip() if m.group(3) else (url_match.group(1) if url_match else "")
+            if name and not name.startswith("http"):
+                sources.append({"name": name, "topic": topic, "url": url})
+                continue
+
+        # URL only
+        if url_match:
+            url = url_match.group(1)
+            name = line.replace(url, "").strip(" -—–:.;,") or url
+            sources.append({"name": name, "topic": "", "url": url})
+            continue
+
+        # Name only (no url)
+        sources.append({"name": line, "topic": "", "url": ""})
+
     return sources[:8]
 
 

@@ -18,7 +18,7 @@ from models import AdminSettings  # noqa: E402
 
 # MongoDB connection (must be available before route imports use it)
 mongo_url = os.environ["MONGO_URL"]
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(mongo_url, tz_aware=True)
 db = client[os.environ["DB_NAME"]]
 
 # Import routers AFTER db is set up

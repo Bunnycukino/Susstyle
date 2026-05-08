@@ -26,12 +26,12 @@
 
 ## What's been implemented (2026-05-08)
 ### Backend
-- `/api/auth` register, login, logout, me, refresh (httpOnly cookies + Bearer fallback, brute-force lockout)
+- `/api/auth` register, login, logout, me, refresh (httpOnly cookies + Bearer fallback, brute-force lockout — fixed tz-aware bug, Motor configured `tz_aware=True`)
 - `/api/profile/health` GET/PUT
-- `/api/chat/models`, `/api/chat/conversations` (list, create, get, delete), `/api/chat/send` (multi-LLM, citation extraction, profile-aware system prompt, language-aware)
+- `/api/chat/models`, `/api/chat/conversations` (list, create, get, delete), `/api/chat/send` (multi-LLM, robust citation extraction supporting markdown links + bullet styles + bold `**Sources:**` headers, profile-aware system prompt, language-aware)
 - `/api/voice/transcribe` (Whisper-1), `/api/voice/tts` (tts-1, voice=sage)
-- `/api/admin/users` (search, role, ban, delete), `/api/admin/conversations` (search, view), `/api/admin/settings` (enabled models, default model, disclaimer, voice toggle, system prompt extras), `/api/admin/analytics` (totals, model usage, daily activity)
-- Admin auto-seeded on startup; MongoDB indexes
+- `/api/admin/users` (regex-escaped search, role, ban, delete), `/api/admin/conversations` (search, view), `/api/admin/settings`, `/api/admin/analytics`
+- Admin auto-seeded; MongoDB indexes
 
 ### Frontend
 - Landing (hero + features + how-it-works + CTA)
