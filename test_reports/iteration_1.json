@@ -1,0 +1,73 @@
+{
+  "summary": "First test run for SusStyle AI Medical Helper. Backend: 27/28 pytest tests passed (96.4%). Frontend: landing, admin login, admin dashboard render correctly with charts. Found one HIGH backend bug in brute-force lockout (datetime tz mismatch) and one frontend regression in registration flow (post-submit redirect to /chat did not occur in playwright run).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/auth/login (failed-attempt tracking)",
+        "issue": "TypeError: can't subtract offset-naive and offset-aware datetimes. After the first failed login the login_attempts doc stores `first_attempt` as a tz-aware datetime, but Motor reads it back as a naive datetime on subsequent calls. _record_failed/_is_locked then compute (now - doc['first_attempt']).total_seconds() and crash with HTTP 500. Net effect: brute-force lockout never triggers (5 fails returned [401, 500, 401, 500, 500, 500] instead of 5x401 then 429).",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "/api/chat/send (gpt-5.2)",
+        "issue": "EXPECTED — Emergent key has exhausted gpt-5.2 budget ('Budget exceeded' 502). Cheaper models (gemini-2.5-flash, gpt-4o, claude-haiku) work. Top-up needed; not a code bug."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Register page / AuthContext",
+        "issue": "After clicking [data-testid=register-submit] with valid new email+name+password, URL stayed on /register and subsequent /profile and /history navigations were redirected to /login (i.e. session was not established in the browser after register). API register endpoint itself works fine when called directly. Suspect: AuthContext.register may not be storing access_token/redirecting, or the submit click did not actually trigger form submission. Worth checking `register-submit` is the real submit button and that AuthContext calls navigate('/chat') on success.",
+        "selector": "[data-testid=\"register-submit\"]",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Registration → /chat redirect",
+        "issue": "Could not reach /chat from a fresh registration in the browser; downstream chat UI testing was blocked.",
+        "affected_selectors": ["[data-testid=\"register-submit\"]", "[data-testid=\"model-select\"]", "[data-testid=\"chat-input\"]"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Admin dashboard",
+        "issues": ["Tabs render correctly (Overview/Users/Conversations/Settings) but data-testid attributes for admin tabs were not found via [data-testid='admin-tab-users'] etc. Recommend exposing admin-tab-{name} data-testid for reliable automation. UI itself looks clean with charts (Model usage, Daily activity)."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX brute-force lockout datetime bug: in /app/backend/auth_routes.py functions _record_failed and _is_locked, normalize first_attempt to tz-aware before subtraction. Example: `fa = doc.get('first_attempt'); if fa and fa.tzinfo is None: fa = fa.replace(tzinfo=timezone.utc)` then use `fa` in the comparison. Re-run TestAuth::test_brute_force_lockout to verify.",
+    "DEBUG register flow on frontend: confirm AuthContext.register sets localStorage access_token AND navigates to /chat on success. Verify the submit button data-testid='register-submit' is the actual <button type='submit'> within the <form>.",
+    "Add data-testid='admin-tab-users|conversations|settings|analytics|overview' on the admin dashboard tab triggers for automated testing.",
+    "Top up Emergent LLM key for gpt-5.2 (or set default_model to gemini-2.5-flash for now)."
+  ],
+  "critical_code_review_comments": [
+    "auth_routes.py: failed-login bookkeeping reads tz-aware datetime back from Mongo as naive — guard everywhere you do arithmetic on Mongo-stored datetimes.",
+    "chat_routes.py extract_sources regex parses '- Name — topic — https://url' but many LLM outputs use '- Name. https://url' or markdown links '[Name](url)'. Consider broadening source parsing to capture URL-only and markdown-link forms so citation chips show reliably.",
+    "chat_routes.py line 256: `prior` is fetched from DB but unused (`_ = prior`). LlmChat session_id-based memory is not equivalent to passing real history; if the lib loses session state (e.g. process restart) prior context is lost. Either pass history into the chat or document the limitation.",
+    "Cookies are set with samesite='none'; secure=True — correct for cross-site preview but means cookies won't work on http://localhost:3000 dev. Frontend correctly falls back to Bearer token from response body.",
+    "admin_routes.py /admin/users uses regex search on user-supplied `q` without escaping — a malicious admin-only input could pass a costly regex; consider re.escape() before composing the $regex."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (created)",
+    "/app/test_reports/pytest/pytest_results.xml (generated)",
+    "/app/test_reports/iteration_1.json (created)"
+  ],
+  "success_rate": {
+    "backend": "96.4% (27/28)",
+    "frontend": "~70% (landing, admin login, admin dashboard charts OK; register→chat redirect blocked)"
+  },
+  "test_credentials": "Admin: admin@susstyle.com / Admin@SusStyle2026 (works). Test users registered via API during pytest run with prefix patient+<hex>@example.com / Patient@2026.",
+  "seed_data_creation": "Auto-seed of admin user verified (visible in /api/admin/users with role=admin). Several throwaway test users created with email prefix 'reg+', 'patient+', 'bf+', 'e2e+' — safe to leave or sweep later.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is largely solid (27/28). The single backend failure (brute-force lockout 500) is an easy datetime-tz fix in auth_routes.py. After that, re-run /app/backend/tests/backend_test.py — it is full pytest with class-scoped fixtures and uses gemini-2.5-flash for LLM calls to avoid budget exhaustion. For frontend, the admin dashboard works under admin@susstyle.com login; the open question is the register→/chat redirect. If the next iteration needs deeper chat UI testing, login as the admin (already trusted) or pre-register a user via API and then login through the UI rather than testing register-then-chat.",
+  "rca of the issue": "Brute-force lockout RCA: In auth_routes._record_failed, the doc inserted on first failure stores datetime.now(timezone.utc) (aware). On the SECOND failed login, _is_locked fetches the same doc — Motor returns the BSON datetime as a NAIVE datetime (BSON UTC datetimes are deserialised tz-naive by default). The expression `(now - doc.get('first_attempt', now)).total_seconds()` then mixes aware (now) with naive (first_attempt) and raises TypeError, surfaced as HTTP 500. Reproduction: POST 5x /api/auth/login with bad password for the same email/IP — observe codes [401,500,500,500,500,500] in supervisor backend.err.log ('TypeError: can\\'t subtract offset-naive and offset-aware datetimes'). Mitigation: in _record_failed and _is_locked, after fetching the doc, do `fa = doc.get('first_attempt'); if isinstance(fa, datetime) and fa.tzinfo is None: fa = fa.replace(tzinfo=timezone.utc)` and use `fa` in the comparison. Optionally configure Motor with `tz_aware=True` at the AsyncIOMotorClient level so all datetimes are aware on read."
+}

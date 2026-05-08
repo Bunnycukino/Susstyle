@@ -1,0 +1,379 @@
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import api, { formatApiError } from "@/lib/api";
+import { useI18n } from "@/contexts/I18nContext";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sparkles, Mic, Square, Send, Volume2, Plus, Trash2, BookOpen, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import MedicalDisclaimer from "@/components/MedicalDisclaimer";
+
+export default function Chat() {
+  const { t } = useI18n();
+  const nav = useNavigate();
+  const { id: routeConvId } = useParams();
+
+  const [conversations, setConversations] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [models, setModels] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [model, setModel] = useState("gpt-5.2");
+  const [language, setLanguage] = useState("en");
+  const [recording, setRecording] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [playingId, setPlayingId] = useState(null);
+
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const scrollRef = useRef(null);
+  const audioRef = useRef(null);
+
+  // Load models + conversations
+  useEffect(() => {
+    (async () => {
+      try {
+        const [m, c] = await Promise.all([api.get("/chat/models"), api.get("/chat/conversations")]);
+        setModels(m.data.models || []);
+        setLanguages(m.data.languages || []);
+        setModel(m.data.default || "gpt-5.2");
+        setVoiceEnabled(!!m.data.voice_enabled);
+        setConversations(c.data || []);
+      } catch (e) {
+        toast.error(formatApiError(e.response?.data?.detail));
+      }
+    })();
+  }, []);
+
+  // Load conversation by route id
+  useEffect(() => {
+    if (!routeConvId) {
+      setActiveId(null);
+      setMessages([]);
+      return;
+    }
+    (async () => {
+      try {
+        const { data } = await api.get(`/chat/conversations/${routeConvId}`);
+        setActiveId(routeConvId);
+        setMessages(data.messages || []);
+        if (data.conversation?.model) setModel(data.conversation.model);
+        if (data.conversation?.language) setLanguage(data.conversation.language);
+      } catch (e) {
+        toast.error(formatApiError(e.response?.data?.detail));
+        nav("/chat", { replace: true });
+      }
+    })();
+  }, [routeConvId, nav]);
+
+  // Auto-scroll
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, sending]);
+
+  const reloadConversations = useCallback(async () => {
+    const { data } = await api.get("/chat/conversations");
+    setConversations(data || []);
+  }, []);
+
+  const newChat = () => {
+    nav("/chat");
+    setMessages([]);
+    setActiveId(null);
+  };
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || sending) return;
+    setSending(true);
+    setInput("");
+    // Optimistic user msg
+    const tempId = `tmp_${Date.now()}`;
+    setMessages((m) => [...m, { id: tempId, role: "user", content: text, sources: [], created_at: new Date().toISOString() }]);
+    try {
+      const { data } = await api.post("/chat/send", {
+        conversation_id: activeId, message: text, model, language,
+      });
+      // Replace optimistic w/ saved versions and append assistant
+      setMessages((m) => {
+        const without = m.filter((x) => x.id !== tempId);
+        return [...without, data.user_message, data.message];
+      });
+      if (!activeId) {
+        setActiveId(data.conversation_id);
+        nav(`/chat/${data.conversation_id}`, { replace: true });
+      }
+      reloadConversations();
+      if (autoSpeak) speakMessage(data.message);
+    } catch (e) {
+      setMessages((m) => m.filter((x) => x.id !== tempId));
+      toast.error(formatApiError(e.response?.data?.detail));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const speakMessage = async (msg) => {
+    if (!voiceEnabled) return;
+    try {
+      setPlayingId(msg.id);
+      // Strip the Sources section from spoken text
+      const cleaned = (msg.content || "").replace(/\n\s*Sources?:[\s\S]*$/i, "").trim();
+      const { data } = await api.post("/voice/tts", { text: cleaned.slice(0, 4000), voice: "sage" });
+      const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+      audioRef.current = audio;
+      audio.onended = () => setPlayingId(null);
+      audio.onerror = () => setPlayingId(null);
+      await audio.play();
+    } catch (e) {
+      setPlayingId(null);
+      toast.error("TTS failed");
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((tr) => tr.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        if (blob.size < 200) { toast.error("Recording too short"); return; }
+        const fd = new FormData();
+        fd.append("audio", blob, "rec.webm");
+        fd.append("language", language);
+        try {
+          const { data } = await api.post("/voice/transcribe", fd, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          if (data.text) setInput((prev) => (prev ? prev + " " : "") + data.text);
+        } catch (e) {
+          toast.error(formatApiError(e.response?.data?.detail));
+        }
+      };
+      mediaRecorderRef.current = mr;
+      mr.start();
+      setRecording(true);
+    } catch (e) {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  };
+
+  const deleteConv = async (cid) => {
+    if (!window.confirm("Delete this consultation?")) return;
+    try {
+      await api.delete(`/chat/conversations/${cid}`);
+      if (cid === activeId) newChat();
+      reloadConversations();
+    } catch (e) {
+      toast.error(formatApiError(e.response?.data?.detail));
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F9F8F6] flex flex-col">
+      <Navbar />
+
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Sidebar */}
+        <aside className="lg:col-span-3 bg-white border border-[#E1DFDA] rounded-3xl p-4 h-[calc(100vh-9rem)] flex flex-col">
+          <Button onClick={newChat} className="rounded-full btn-sage mb-4" data-testid="new-chat-btn">
+            <Plus className="w-4 h-4 mr-2" /> {t("newChat")}
+          </Button>
+          <div className="text-xs uppercase tracking-[0.25em] text-[#5C6A64] mb-2 px-1">Recent</div>
+          <ScrollArea className="flex-1 -mx-1 px-1">
+            <div className="space-y-1">
+              {conversations.length === 0 && (
+                <p className="text-sm text-[#5C6A64] text-center py-8" data-testid="conv-empty">{t("chatHistoryEmpty")}</p>
+              )}
+              {conversations.map((c) => (
+                <div key={c.id}
+                  className={`group rounded-xl px-3 py-2 cursor-pointer flex items-center justify-between ${
+                    c.id === activeId ? "bg-[#8BA888]/15" : "hover:bg-[#E8E6E1]/50"
+                  }`}
+                  onClick={() => nav(`/chat/${c.id}`)}
+                  data-testid={`conv-${c.id}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-[#1A2E25] truncate">{c.title}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-[#5C6A64]">{c.model}</div>
+                  </div>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 text-[#CC7A6B] p-1"
+                    onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}
+                    data-testid={`conv-delete-${c.id}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </aside>
+
+        {/* Main chat */}
+        <main className="lg:col-span-9 flex flex-col bg-white border border-[#E1DFDA] rounded-3xl overflow-hidden h-[calc(100vh-9rem)]">
+          {/* Toolbar */}
+          <div className="flex flex-wrap gap-3 items-center px-4 md:px-6 py-3 border-b border-[#E1DFDA] bg-[#F9F8F6]/60">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#8BA888]" />
+              <Select value={model} onValueChange={setModel}>
+                <SelectTrigger className="w-[210px] h-9 rounded-full border-[#E1DFDA] bg-white text-sm" data-testid="model-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map((m) => (
+                    <SelectItem key={m.id} value={m.id} data-testid={`model-${m.id}`}>
+                      {m.name} <span className="text-[#5C6A64] text-xs ml-1">({m.provider})</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-[140px] h-9 rounded-full border-[#E1DFDA] bg-white text-sm" data-testid="language-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((l) => (
+                  <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {voiceEnabled && (
+              <label className="flex items-center gap-2 text-sm text-[#5C6A64] ml-auto cursor-pointer">
+                <input type="checkbox" checked={autoSpeak} onChange={(e) => setAutoSpeak(e.target.checked)}
+                  className="accent-[#8BA888]" data-testid="auto-speak-toggle" />
+                Auto-read replies
+              </label>
+            )}
+          </div>
+
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-10 py-6 space-y-5">
+            {messages.length === 0 && (
+              <div className="text-center py-12 text-[#5C6A64] max-w-xl mx-auto">
+                <div className="w-14 h-14 rounded-2xl bg-[#8BA888]/12 text-[#8BA888] flex items-center justify-center mx-auto mb-5">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <h2 className="font-heading text-2xl text-[#1A2E25] mb-3">How can I help you today?</h2>
+                <p className="text-sm">Describe a symptom, ask about a medication, or get a second opinion. All advice is sourced from authoritative medical literature.</p>
+              </div>
+            )}
+
+            {messages.map((m) => (
+              <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} animate-fade-up`}>
+                <div className={`max-w-[88%] md:max-w-[78%] ${m.role === "user" ? "bubble-user rounded-2xl rounded-tr-sm" : "bubble-ai rounded-2xl rounded-tl-sm"} p-4`}>
+                  <div className="text-[10px] uppercase tracking-[0.25em] mb-2 text-[#5C6A64]">
+                    {m.role === "user" ? t("you") : `${t("assistant")}${m.model ? ` · ${m.model}` : ""}`}
+                  </div>
+                  <div className="text-[15px] leading-relaxed whitespace-pre-wrap" data-testid={`msg-${m.id}`}>
+                    {m.content}
+                  </div>
+                  {m.sources && m.sources.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-[#1A2E25]/10">
+                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#5C6A64] mb-2 flex items-center gap-1.5">
+                        <BookOpen className="w-3 h-3" /> {t("sources")}
+                      </div>
+                      <ul className="space-y-1.5">
+                        {m.sources.map((s, i) => (
+                          <li key={i} className="text-xs text-[#1A2E25]">
+                            {s.url ? (
+                              <a href={s.url} target="_blank" rel="noopener noreferrer"
+                                className="hover:underline inline-flex items-start gap-1" data-testid={`src-${m.id}-${i}`}>
+                                <span className="font-medium">{s.name}</span>
+                                {s.topic && <span className="text-[#5C6A64]"> — {s.topic}</span>}
+                                <ExternalLink className="w-3 h-3 mt-0.5 opacity-60" />
+                              </a>
+                            ) : (
+                              <span><span className="font-medium">{s.name}</span>{s.topic && <span className="text-[#5C6A64]"> — {s.topic}</span>}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {m.role === "assistant" && voiceEnabled && (
+                    <button
+                      onClick={() => speakMessage(m)}
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#8BA888] hover:text-[#7A9678]"
+                      data-testid={`speak-${m.id}`}
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      {playingId === m.id ? "Playing..." : t("listen")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {sending && (
+              <div className="flex justify-start">
+                <div className="bubble-ai rounded-2xl rounded-tl-sm p-4">
+                  <div className="text-[10px] uppercase tracking-[0.25em] mb-2 text-[#5C6A64]">{t("assistant")}</div>
+                  <div className="dot-typing text-[#8BA888]"><span>•</span><span>•</span><span>•</span></div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Composer */}
+          <div className="border-t border-[#E1DFDA] p-3 md:p-5 bg-white">
+            <div className="rounded-2xl border border-[#E1DFDA] bg-[#F9F8F6] p-2 flex items-end gap-2">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                }}
+                placeholder={t("askPlaceholder")}
+                rows={1}
+                className="flex-1 resize-none border-0 bg-transparent focus-visible:ring-0 max-h-40"
+                data-testid="chat-input"
+              />
+              {voiceEnabled && (
+                <Button
+                  type="button"
+                  variant={recording ? "destructive" : "ghost"}
+                  size="icon"
+                  className={`rounded-full shrink-0 ${recording ? "mic-recording bg-[#CC7A6B] hover:bg-[#CC7A6B]/90" : "text-[#5C6A64]"}`}
+                  onClick={recording ? stopRecording : startRecording}
+                  data-testid="mic-btn"
+                  title={recording ? t("stopRecord") : t("record")}
+                >
+                  {recording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+              )}
+              <Button onClick={send} disabled={!input.trim() || sending}
+                className="rounded-full btn-sage shrink-0 px-5" data-testid="send-btn">
+                <Send className="w-4 h-4 mr-1.5" /> {t("send")}
+              </Button>
+            </div>
+            <div className="mt-3">
+              <MedicalDisclaimer compact />
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
