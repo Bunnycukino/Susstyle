@@ -89,6 +89,6 @@
   },
   "overrides": {
     "ajv": "^8.17.1",
-    "ajv-keywords": "^5.0.0"
+    "ajv-keywords": "^4.2.1"
   }
 }
